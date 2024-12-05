@@ -1,0 +1,2 @@
+class TeamWallet < Wallet
+end
