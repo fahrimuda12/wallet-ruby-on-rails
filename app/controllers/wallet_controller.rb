@@ -3,8 +3,9 @@ class WalletController < ApplicationController
 
 
   before_action :set_wallet, only: %i[ show update destroy ]
+  # before_action :auhtorize_user
 
-  include ResponseHelper
+  include ResponseHelper, AuthorizeRequest 
 
 
   # GET /wallets
@@ -13,7 +14,7 @@ class WalletController < ApplicationController
     
     # check not empty
     if @wallets.empty?
-      return render json: { message: "No wallets found" }, status: :not_found
+      return error_response(message: 'No wallets found', errors: [], status: :not_found)
     end
 
     # @wallet = WalletMutation.new(@wallets).transform
@@ -74,6 +75,17 @@ class WalletController < ApplicationController
     end
   end
 
+   # POST /api/wallets/:id/validate
+   def validate_key_phrases
+    input_phrases = params[:key_phrases] || []
+
+    if (input_phrases & @wallet.key_phrases).size >= 5
+      render_success(message: 'Wallet validated successfully')
+    else
+      render_error(message: 'Failed to validate wallet', errors: ['Insufficient matching key phrases'])
+    end
+  end
+
   # PATCH/PUT /wallets/1
   def update
     if @wallet.update(wallet_params)
@@ -103,4 +115,11 @@ class WalletController < ApplicationController
     def params_create
       params.require(:wallet).permit(:entity_type, :entity_id, :balance)
     end
+
+    # def auhtorize_user
+    #   # check user
+    #   if !User.exists?(id: params[:user_id])
+    #     return render json: { message: "Must Be login First" }, status: :not_found
+    #   end
+    # end
 end
