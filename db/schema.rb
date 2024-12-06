@@ -10,13 +10,14 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2024_12_06_031657) do
+ActiveRecord::Schema[8.0].define(version: 2024_12_06_155911) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
+  enable_extension "uuid-ossp"
 
   create_table "transactions", force: :cascade do |t|
-    t.integer "source_wallet_id"
-    t.integer "target_wallet_id"
+    t.uuid "source_wallet_id"
+    t.uuid "target_wallet_id"
     t.decimal "amount", precision: 10, scale: 2, null: false
     t.string "transaction_type", null: false
     t.datetime "created_at", null: false
@@ -33,7 +34,7 @@ ActiveRecord::Schema[8.0].define(version: 2024_12_06_031657) do
     t.index ["username"], name: "index_users_on_username", unique: true
   end
 
-  create_table "wallets", force: :cascade do |t|
+  create_table "wallets", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.string "entity_type", null: false
     t.integer "entity_id", null: false
     t.decimal "balance", precision: 10, scale: 2, default: "0.0", null: false

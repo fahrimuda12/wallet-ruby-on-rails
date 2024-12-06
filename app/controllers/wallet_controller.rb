@@ -25,7 +25,8 @@ class WalletController < ApplicationController
     @wallets = @wallets.map do |wallet|
       {
         id: wallet.id,
-        name: wallet.name,
+        entity_type: wallet.entity_type,
+        balance: wallet.balance,
         created_at: wallet.created_at,
         updated_at: wallet.updated_at
       }
@@ -43,7 +44,25 @@ class WalletController < ApplicationController
 
   # GET /wallets/1
   def show
-    render json: @wallet
+    @wallet = {
+      id: @wallet.id,
+      entity_type: @wallet.entity_type,
+      balance: @wallet.balance,
+      created_at: @wallet.created_at,
+      updated_at: @wallet.updated_at,
+      transactions: @wallet.transactions.map do |transaction|
+        {
+          id: transaction.id,
+          amount: transaction.amount,
+          description: transaction.description,
+          source_wallet_id: transaction.source_wallet_id,
+          target_wallet_id: transaction.target_wallet_id,
+          created_at: transaction.created_at,
+          updated_at: transaction.updated_at
+        }
+      end
+    }
+    success_response(message: 'Wallet found', data: @wallet)
   end
 
   # POST /wallets
@@ -113,13 +132,7 @@ class WalletController < ApplicationController
     end
 
     def params_create
-      params.require(:wallet).permit(:entity_type, :entity_id, :balance)
+      params.require(:wallet).permit(:entity_type, :entity_id, :balance).merge(user_id: @current_user.id)
+      
     end
-
-    # def auhtorize_user
-    #   # check user
-    #   if !User.exists?(id: params[:user_id])
-    #     return render json: { message: "Must Be login First" }, status: :not_found
-    #   end
-    # end
 end
