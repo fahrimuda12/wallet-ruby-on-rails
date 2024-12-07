@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2024_12_06_155911) do
+ActiveRecord::Schema[8.0].define(version: 2024_12_07_034252) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "uuid-ossp"
@@ -35,15 +35,17 @@ ActiveRecord::Schema[8.0].define(version: 2024_12_06_155911) do
   end
 
   create_table "wallets", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
-    t.string "entity_type", null: false
-    t.integer "entity_id", null: false
+    t.string "name", null: false
+    t.string "type", null: false
     t.decimal "balance", precision: 10, scale: 2, default: "0.0", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.bigint "user_id", null: false
     t.string "key_phrases", default: [], array: true
-    t.index ["entity_type", "entity_id"], name: "index_wallets_on_entity_type_and_entity_id", unique: true
+    t.string "virtual_account", null: false
+    t.string "tag_name", null: false
     t.index ["user_id"], name: "index_wallets_on_user_id"
+    t.index ["virtual_account", "tag_name"], name: "index_wallets_on_virtual_account_and_tag_name", unique: true
   end
 
   add_foreign_key "wallets", "users"

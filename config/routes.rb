@@ -32,8 +32,8 @@ Rails.application.routes.draw do
   post 'login', to: 'sessions#login'
   post 'register', to: 'sessions#register'
 
-  resources :wallet, only: [:index, :show, :create, :update, :destroy], controller: 'wallet',
-  path_names: { create: 'create' }
+  resources :wallet, only: [:index, :show, :create, :update, :destroy], controller: 'wallet', path_names: { create: 'create' }
+  resources :transactions, only: [:create, :index]
 
   # namespace :api do
   #   resources :wallets, only: [:create] do

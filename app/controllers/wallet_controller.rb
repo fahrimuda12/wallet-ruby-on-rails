@@ -25,7 +25,8 @@ class WalletController < ApplicationController
     @wallets = @wallets.map do |wallet|
       {
         id: wallet.id,
-        entity_type: wallet.entity_type,
+        name: wallet.name,
+        type: wallet.type,
         balance: wallet.balance,
         created_at: wallet.created_at,
         updated_at: wallet.updated_at
@@ -62,30 +63,48 @@ class WalletController < ApplicationController
         }
       end
     }
-    success_response(message: 'Wallet found', data: @wallet)
+    success_response(message: 'Wallet  ', data: @wallet)
   end
 
   # POST /wallets
   def create
     begin
-      print params_create
-
+      p params_create[:entity_type]
+      # mutation params
+      params_wallet = {
+        :balance => params_create[:balance],
+        :name => params_create[:name],
+        :user_id => params_create[:user_id]
+      }
+      p params_wallet
       # check entity type sudah ada atau belum
-      if Wallet.exists?(entity_type: params_create[:entity_type], entity_id: params_create[:entity_id])
+      if Wallet.exists?(type: params_create[:entity_type], user_id: @current_user.id)
         return error_response(message: 'Entity already has a wallet', errors: [], status: :conflict)
       end
 
-      @wallet = Wallet.new(params_create)
+      # buat switch case untuk membuat wallet berdasarkan entity type
+      case params_create[:entity_type]
+      when 'User'
+        @wallet = UserWallet.new(params_wallet)
+      when 'Team'
+        @wallet = TeamWallet.new(params_wallet)
+      else
+        return error_response(message: 'Invalid entity type', errors: [], status: :unprocessable_entity)
+      end
+
 
       Wallet.transaction do
         unless @wallet.save
-          raise ActiveRecord::Rollback
-          return render json: @wallet.errors, status: :unprocessable_entity
+          return error_response(message: 'Failed to create wallet', errors: @wallet.errors, status: :unprocessable_entity)
         end
       end
 
       success_response(message: 'Wallet created successfully', data: @wallet, status: :created)
 
+    # add rollback
+    rescue ActiveRecord::RecordInvalid
+      server_errror_response(message: 'Record invalid', errors: @wallet.errors)
+      raise ActiveRecord::Rollback
     rescue ActionController::ParameterMissing => e
       server_errror_response(message: 'Parameter missing', errors: e.message)
     rescue Exception => e
@@ -128,11 +147,10 @@ class WalletController < ApplicationController
 
     # Only allow a list of trusted parameters through.
     def wallet_params
-      params.require(:wallet).permit(:entity_type, :entity_id, :balance)
+      params.require(:wallet).permit(:entity_type, :balance)
     end
 
     def params_create
-      params.require(:wallet).permit(:entity_type, :entity_id, :balance).merge(user_id: @current_user.id)
-      
+      params.permit(:entity_type, :balance, :name).merge(user_id: @current_user.id)
     end
 end
