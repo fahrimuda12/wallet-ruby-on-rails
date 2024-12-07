@@ -19,7 +19,7 @@ module ResponseHelper
       }, status: status
     end
 
-    def server_errror_response(message: 'Error', errors: [])
+    def server_error_response(message: 'Error', errors: [])
       render json: {
         success: false,
         message: message,

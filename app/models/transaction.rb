@@ -5,20 +5,22 @@ class Transaction < ApplicationRecord
     validates :amount, numericality: { greater_than: 0 }
     validates :transaction_type, inclusion: { in: %w[credit debit] }
   
-    before_create :validate_transaction
+    validate :validate_transaction, :on => :create
+
+    # before_create :validate_transaction
     after_create :update_wallet_balances
   
     private
   
     def validate_transaction
-      if transaction_type == 'credit' && source_wallet_id.present?
-        errors.add(:source_wallet, 'should be nil for credit transactions')
-      elsif transaction_type == 'debit' && target_wallet_id.present?
-        errors.add(:target_wallet, 'should be nil for debit transactions')
-      end
+      # if transaction_type == 'credit' && source_wallet_id.present?
+      #   errors.add(:source_wallet, 'should be nil for credit transactions')
+      # elsif transaction_type == 'debit' && target_wallet_id.present?
+      #   errors.add(:target_wallet, 'should be nil for debit transactions')
+      # end
   
-      if transaction_type == 'debit' && source_wallet.balance < amount
-        errors.add(:source_wallet, 'insufficient balance for debit transaction')
+      if transaction_type == 'credit' && source_wallet.balance < amount
+        errors.add(:target_wallet, 'insufficient balance for credit transaction')
       end
     end
   

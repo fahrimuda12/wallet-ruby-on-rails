@@ -103,12 +103,12 @@ class WalletController < ApplicationController
 
     # add rollback
     rescue ActiveRecord::RecordInvalid
-      server_errror_response(message: 'Record invalid', errors: @wallet.errors)
+      server_error_response(message: 'Record invalid', errors: @wallet.errors)
       raise ActiveRecord::Rollback
     rescue ActionController::ParameterMissing => e
-      server_errror_response(message: 'Parameter missing', errors: e.message)
+      server_error_response(message: 'Parameter missing', errors: e.message)
     rescue Exception => e
-      server_errror_response(message: 'Exception', errors: e.message)
+      server_error_response(message: 'Exception', errors: e.message)
       raise
     end
   end

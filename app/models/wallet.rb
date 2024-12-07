@@ -28,7 +28,7 @@ class Wallet < ApplicationRecord
     end
 
     def generate_tag_name
-      self.tag_name = "#{name}_#{SecureRandom.alphanumeric(2)}"
+      self.tag_name = "#{name.gsub(' ', '')}_#{SecureRandom.alphanumeric(2)}"
     end
 
 end
