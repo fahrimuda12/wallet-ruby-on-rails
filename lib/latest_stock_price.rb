@@ -10,7 +10,7 @@ module LatestStockPrice
   end
 
   def self.prices(stock_symbols)
-    request("/prices/#{stock_symbols.join(',')}")
+    request("/prices/#{stock_symbols}")
   end
 
   def self.price_all
@@ -30,5 +30,11 @@ module LatestStockPrice
 
     response = Net::HTTP.start(uri.host, uri.port, use_ssl: true) { |http| http.request(req) }
     JSON.parse(response.body)
+    {
+      message: response.message,
+      code: response.code,
+      error: response.is_a?(Net::HTTPSuccess) ? nil : response.body,
+      data: response.is_a?(Net::HTTPSuccess) ? JSON.parse(response.body) : nil
+    }
   end
 end

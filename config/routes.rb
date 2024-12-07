@@ -34,6 +34,13 @@ Rails.application.routes.draw do
 
   resources :wallet, only: [:index, :show, :create, :update, :destroy], controller: 'wallet', path_names: { create: 'create' }
   resources :transactions, only: [:create, :index]
+  resources :stocks, only: [] do
+    collection do
+      get 'price-all' => 'stocks#price_all'
+      get 'price/:id' => 'stocks#price'
+      get 'prices' => 'stocks#prices'
+    end
+  end
 
   # namespace :api do
   #   resources :wallets, only: [:create] do
