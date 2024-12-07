@@ -47,17 +47,19 @@ class WalletController < ApplicationController
   def show
     @wallet = {
       id: @wallet.id,
-      entity_type: @wallet.entity_type,
+      entity_type: @wallet.type,
       balance: @wallet.balance,
+      tag_name: @wallet.tag_name,
+      virtual_account: @wallet.virtual_account,
       created_at: @wallet.created_at,
       updated_at: @wallet.updated_at,
       transactions: @wallet.transactions.map do |transaction|
         {
           id: transaction.id,
           amount: transaction.amount,
-          description: transaction.description,
           source_wallet_id: transaction.source_wallet_id,
           target_wallet_id: transaction.target_wallet_id,
+          transaction_type: transaction.transaction_type,
           created_at: transaction.created_at,
           updated_at: transaction.updated_at
         }

@@ -39,7 +39,6 @@ class TransactionsController < ApplicationController
 
 
   def create
-    # ActiveRecord::Base.transaction do
       tag_name = transaction_params[:tag_name]
       virtual_account = transaction_params[:virtual_account]
       target_wallet_id = transaction_params[:target_wallet]
@@ -55,46 +54,38 @@ class TransactionsController < ApplicationController
 
       @source_wallet = Wallet.find(source_wallet_id)
 
-      # cek apakah target wallet id ditemukan
-      unless tag_name.nil?
-        @target_wallet = Wallet.find_by(tag_name: tag_name)
-      end
-
-      unless virtual_account.nil?
-        @target_wallet = Wallet.find_by(virtual_account: virtual_account)
-      end
-
-      unless target_wallet_id.nil?
-        unless Wallet.exists?(id: target_wallet)
-          return error_response(message: 'Target wallet not found', errors: [], status: :not_found)
-        end
-        @target_wallet = Wallet.find(target_wallet_id)
-      end
-
-      # cek jika target_wallet tidak ditemukan
-      if @target_wallet.nil?
-        return error_response(message: 'Target wallet not found', errors: [], status: :not_found)
-      end
-
       case transaction_type
       when 'deposit'
-        handle_transaction { deposit(wallet, amount) }
+        handle_transaction { deposit(@source_wallet, amount) }
       when 'withdraw'
-        handle_transaction { withdraw(wallet, amount) }
+        handle_transaction { withdraw(@source_wallet, amount) }
       when 'transfer'
+
+        # cek apakah target wallet id ditemukan
+        unless tag_name.nil?
+          @target_wallet = Wallet.find_by(tag_name: tag_name)
+        end
+
+        unless virtual_account.nil?
+          @target_wallet = Wallet.find_by(virtual_account: virtual_account)
+        end
+
+          unless target_wallet_id.nil?
+            unless Wallet.exists?(id: target_wallet)
+              return error_response(message: 'Target wallet not found', errors: [], status: :not_found)
+            end
+            @target_wallet = Wallet.find(target_wallet_id)
+        end
+
+        # cek jika target_wallet tidak ditemukan
+        if @target_wallet.nil?
+          return error_response(message: 'Target wallet not found', errors: [], status: :not_found)
+        end
+
         handle_transaction { transfer(@source_wallet,  @target_wallet, amount) }
       else
         return error_response(message: 'Invalid transaction type', errors: [], status: :unprocessable_entity)
       end
-    # end
-
-    # rescue ActiveRecord::RecordInvalid
-    #   server_error_response(message: 'Record invalid', errors: @transaction.errors)
-    # rescue ActionController::ParameterMissing => e
-    #   server_error_response(message: 'Parameter missing', errors: e.message)
-    # rescue Exception => e
-    #   server_error_response(message: 'Exception', errors: e.message)
-    #   raise
   end
 
   private
